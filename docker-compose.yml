@@ -1,0 +1,41 @@
+version: '3'
+services:
+  # Certbot
+  standalone:
+    image: certbot/certbot:latest
+    container_name: certbot-standalone
+    ports:
+      - '80:80'
+    volumes:
+      - ./log:/var/log/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt
+    command: >
+      certonly --standalone 
+      -d ${DOMAIN} 
+      --non-interactive 
+      --agree-tos 
+      -m ${EMAIL}
+  webroot:
+    image: certbot/certbot:latest
+    container_name: certbot-webroot
+    volumes:
+      - ./log:/var/log/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt
+      - ${WEBROOTPATH}:/var/www/certbot
+    command: >
+      certonly --webroot 
+      -w /var/www/certbot
+      -d ${DOMAIN} 
+      --non-interactive 
+      --agree-tos 
+      -m ${EMAIL} 
+      --force-renewal
+  renew:
+    image: certbot/certbot:latest
+    container_name: certbot-renew
+    volumes:
+      - ./log:/var/log/letsencrypt
+      - /etc/letsencrypt:/etc/letsencrypt
+      - ${WEBROOTPATH}:/var/www/certbot
+    command: >
+      renew 
